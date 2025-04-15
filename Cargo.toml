@@ -1,0 +1,8 @@
+[package]
+name = "Skryn"
+version = "0.1.0"
+edition = "2024"
+authors = ["ImFeH2"]
+
+[dependencies]
+winapi = { version = "0.3", features = ["dwmapi", "tlhelp32", "processthreadsapi", "winuser", "wingdi", "windef", "winbase", "minwindef", "handleapi"] }
