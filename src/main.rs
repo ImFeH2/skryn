@@ -6,6 +6,7 @@ mod grabs;
 mod input;
 mod state;
 mod winit;
+mod backend;
 
 use smithay::reexports::{
     calloop::EventLoop,

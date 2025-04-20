@@ -5,14 +5,13 @@ use smithay::{
         renderer::{
             damage::OutputDamageTracker, element::surface::WaylandSurfaceRenderElement, gles::GlesRenderer,
         },
-        winit::{self, WinitEvent},
     },
     output::{Mode, Output, PhysicalProperties, Subpixel},
     reexports::calloop::EventLoop,
     utils::{Rectangle, Transform},
 };
 
-use crate::{CalloopData, Smallvil};
+use crate::{backend::{self, WinitEvent}, CalloopData, Smallvil};
 
 pub fn init_winit(
     event_loop: &mut EventLoop<CalloopData>,
@@ -21,7 +20,7 @@ pub fn init_winit(
     let display_handle = &mut data.display_handle;
     let state = &mut data.state;
 
-    let (mut backend, winit) = winit::init()?;
+    let (mut backend, winit) = backend::init()?;
 
     let mode = Mode {
         size: backend.window_size(),
