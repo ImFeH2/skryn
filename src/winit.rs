@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use image::{ImageBuffer, Rgba};
+use image::imageops::flip_vertical;
 use smithay::{
     backend::{
         renderer::{
@@ -10,7 +12,9 @@ use smithay::{
     reexports::calloop::EventLoop,
     utils::{Rectangle, Transform},
 };
-
+use smithay::backend::allocator::Fourcc;
+use smithay::backend::renderer::ExportMem;
+use smithay::utils::{Point, Size};
 use crate::{backend::{self, WinitEvent}, CalloopData, Smallvil};
 
 pub fn init_winit(
@@ -20,7 +24,7 @@ pub fn init_winit(
     let display_handle = &mut data.display_handle;
     let state = &mut data.state;
 
-    let (mut backend, winit) = backend::init()?;
+    let (mut backend, winit) = backend::init::<GlesRenderer>()?;
 
     let mode = Mode {
         size: backend.window_size(),
@@ -106,6 +110,26 @@ pub fn init_winit(
                 backend.window().request_redraw();
             }
             WinitEvent::CloseRequested => {
+                let size = backend.window_size();
+                let (renderer, mut framebuffer) = backend.bind().unwrap();
+
+                let region = Rectangle {
+                    loc: Point::from((0, 0)),
+                    size: Size::from((size.w, size.h)),
+                };
+                let mapping = renderer.copy_framebuffer(&mut framebuffer, region, Fourcc::Abgr8888).unwrap();
+                let bytes = renderer.map_texture(&mapping).unwrap();
+                let abgr_data = bytes.to_vec();
+
+                let width = size.w as u32;
+                let height = size.h as u32;
+                // directly use abgr -> rgba because byte order is different
+                let buffer: ImageBuffer<Rgba<u8>, _> = ImageBuffer::from_raw(width, height, abgr_data).unwrap();
+                let flipped_buffer = flip_vertical(&buffer);
+                if flipped_buffer.save("screen.png").is_ok() {
+                    println!("successful save screenshot!");
+                }
+
                 state.loop_signal.stop();
             }
             _ => (),
